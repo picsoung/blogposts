@@ -2,7 +2,7 @@
 
 Last week, we had our first ever internal hackathon at 3scale. During two days we were able to take a break on our normal work life and start hacking on all the crazy ideas we had around our products (3scale, APItools or APIs.io).
 
-As I've been playing a lot lately with APItools I surely wanted to build something on top of it. My great colleague Didier, wanted to hack the Hue lights from his flat. We've flet there was something to do there, connecting APItools and Hue lights.
+As I've been playing a lot lately with APItools I surely wanted to build something on top of it. My great colleague [Didier](https://twitter.com/ddcsare), wanted to hack the Hue lights from his flat. We've flet there was something to do there, connecting APItools and Hue lights.
 
 Geeks and Engineers in general love analytics and dashboards. It's a great way for them to understand and visualize what's hapenning in the complex systems they are building. Visual feedback is really appreciated in a workspace, it informs you without disturbing you with emails, or pop-up notifications. It's a quiet notification.
 
