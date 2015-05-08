@@ -1,45 +1,44 @@
 #Hacking APItools API
 
-You may remember the last story we've shared about our internal hackathon at 3scale. Well we did not say tell you everything about it, we have more to share with you :)
+You may remember the last story we've shared about our internal hackathon at 3scale. Well, we didn't tell you everything about it, we have more to share with you :)
 
-During our internal hackathon, Didier and myself decided to build an API health status light using APItools and Hue light. The hue light will turn Green if everything goes well, and red if there is an issue on the API (4XX errors).
+During our internal hackathon, [Didier](https://twitter.com/ddcsare 'Didier on Twitter') and myself decided to build an API health status light using APItools and [Hue light](https://www.apitools.com/apis/philips-hue 'Hue light'). The hue light will turn green if everything goes well, and red if there is an issue with the API response (4XX errors).
 
-As we stated in our previous story we wanted to build to a `a "one-click deploy" middleware service.`
-We would authenticate users on their APItools account, they select a monitor and a service, and we will add our middleware to it. Simple as one click for the user a bit more complicated from the hacking side.
+As we stated in [our previous story](https://docs.apitools.com/blog/2015/02/25/hacking-apitools-during-the-3scale-internal-hackathon.html 'Hacking APItools during the 3scale internal hackathon') we wanted to build to a `a "one-click deploy" middleware service.`
+The idea was to authenticate users with their APItools account, they'd select a monitor and a service, and we'd add our middleware to that. As simple as one click for the user and a bit more complicated from the hacking side.
 
+#### Using an undocumented API
+APItools' own API is not really documented and not clearly exposed as an API. However, it is consumed by APItools itself. So we went back and forth doing stuff in the APItools UI and analized the XHR requests that were made to see what was needed. We also used this [blog post which contains some info about APItools' API](https://docs.apitools.com/blog/2014/08/21/traffic-monitor-api.html 'About APItools API'). 
+And with the help of our APItools engineers [Michal](https://twitter.com/_mikz 'Michal on Twitter') and [Enrique](https://twitter.com/otikik 'Enrique on Twitter'), we were able to make it work.
 
-## Using an undocumented API
-APItools own API is not really documented and not clearly exposed as an API. But the tools that you are using everyday is consuming this API. So we went back and forth doing stuff on APItools UI and analysing the XHR requests that were made to see what we would need. 
-With the help of our APItools engineers Michal and Enrique, we were able to make it working.
+When we started, this is the flow he had in mind:
 
-The flow we had in mind at the beginning of the hackathon was:
+1. Authenticating a user
+2. Retrieving monitors
+3. Retrieving services from monitor
+4. Adding middleware to the service
 
-1. Authentication user
-2. Retrieve monitors
-3. Retrieve services from monitor
-4. Add middleware to service
+#### Authenticating a user
+At first we thought that people would just give us a username and a password and we would log easily them in as there is nothing like OAuth in APItools. But it turned out that authentication with username and password was not available in the API.
 
-## Authenticating a user
-At first we thought that people will just give us username and password and we will log them easily as there is nothing like OAuth in APItools. But it turns out that authentication with username and password was not available in the API.
+Instead we could auth the user with their APItools API key and the monitor id they wanted to use. However, we wouldn't be able to list existing monitors for a user. That reduced our idea but it was also simpler to hack during a hackathon.
 
-Instead we can auth user with their APItools API key and the monitor id they want to use. So we won't have either the possibility to list existing monitors for a user. That reduced our idea but it was simpler to hack during a hackathon.
-
-Your API key could be found under the settings menu
+Your API key can be found under the settings menu:
 
 **Screenshot**
 
-We will also need the monitor id, to get it just click on the name of your monitor, you will get to the dashboard for the corresponding monitor, the URL should be `http://MONITOR_ID.my.apitools.com`
+We also needed the monitor id which can be found by clicking on the monitor link. The URL should look like this `http://MONITOR_ID.my.apitools.com`
 
-Once you get both API key and monitor Id we can authenticate the request to APItools.
+Once you have both the API key and the monitor Id you can authenticate the request to APItools.
 
 Make a simple GET request to `https://API_KEY@MONITOR_ID.my.apitools.com/`
-In the response of this request extract the cookie `XSRF-TOKEN` and keep it for later.
+In the response of this request extract the cookie `XSRF-TOKEN` and save it for later.
 
-## Play with services
-Once you get authenticated on one monitor you can play with the services related to it.
+#### Play with services
+Once you are authenticated on one monitor you can play with the services attached to that monitor.
 
-For example if you want to get all the services of a monitor you can call `https://API_KEY@MONITOR_ID.my.apitools.com/api/services`
-This will give you something similar to
+For example, if you want to get all the services of a monitor you can call `https://API_KEY@MONITOR_ID.my.apitools.com/api/services`
+This will give you something like
 
 ```
 [
@@ -84,7 +83,7 @@ This will give you something similar to
 ]
 ```
 
-in our case, during the hackathon we decide to go the simplest way and just push a new service every time.
+In our case, during the hackathon we decided to keep it simple and just push a new service every time.
 Here is the call to create a new service on APItools
 
 ```
@@ -102,7 +101,7 @@ HTTP.post(host,{
 });
 ```
 
-Couple of placeholders you have to take care of :
+And a few placeholders that have to be taken care of:
 
 * API_KEY - APIKEY of APItools
 * MONITOR_ID - Monitor ID where  you want to add the service
@@ -150,17 +149,18 @@ This will give you:
     }
 }
 ```
-If the response has a status 201 it means that service was sucessfuly created. Store `data._id` we wil need it for later.
+If the response returns a 201 status it means that service was sucessfuly created. Store `data._id`, we will need it later.
 
-##Push middleware
-Now that we have created a new service we want to add middleware. Middleware are small snippet of Lua code that are executed when you make a call through APItools.
-Middleware could be turn on or off, depending if you want them active or not. You can also change the order of middleware, so one will be executed before others.
+####Adding middleware to the service
+Once the new service has been created, middleware can be added. Middleware modules are small snippets of Lua code that are executed when you make a call through APItools.
 
-In theory using the API you can load all the existing middleware of a service and see in which order they are executed. But in our case we wanted to do some simple for the user, so he did not have to think about it. We would simply flush the existing middleware pipeline and push our own.
+Middleware modules can be turned on or off, depending on if you want them active or not. You can also change the order of the middleware modules choosing the order in which they are executed.
 
-We had write snippets of lua code we want to push as middleware.
+In theory using the API you can load all the existing middleware modules of a service and see in which order they are executed. But in our case we didn't need that and we simply flushed the existing middleware pipeline and pushed our own.
 
-First we have to create a middleware object.
+We have written a few snippets of Lua code we wanted to push as middleware modules.
+
+The first thing to do is creating a middleware object.
 
 ```
 mw_uuid = uuid(); //Generate a unique id to identify the middleware
@@ -175,11 +175,11 @@ middlewares[mw_uuid] = {
   uuid: mw_uuid
 };
 ```
-As you see a middleware is identified by a unique Id, we created a function `uuid()` to generate one but you are free to use any id you want. 
-The code of the middleware has to be loaded from a file you already wrote.
-Feel free to change the name and the description of the middleware.
+As you can see middleware modules are identified by a unique Id, we created a function `uuid()` to generate one but you are free to use any id you want. 
 
-Once you the middleware object created, you can push it to the service.
+The code in the middleware module has to be loaded from the file you already wrote. Feel free to change the name and the description.
+
+Once you the middleware object is created you can push it to the service.
 
 
 ```
@@ -195,7 +195,7 @@ HTTP.post(host,{
 });
 ```
 
-if everything went well you should have something like this
+If everything went well you should have something like this
 
 ```
 {
@@ -240,12 +240,10 @@ if everything went well you should have something like this
 }
 ```
 
-That's just an overview of what we've used from APItools' API in our hack. You can do much more if you are not constraint by time. Imagine being able to push your middleware dedicated to your API to your users, in few clicks.
+That's just an overview of how we used APItools' API in our hack. You could do much more without the time constraint of a hackathon. Imagine being able to push your middleware modules, dedicated to your API or to your users, in just few clicks.
 
 You can find some hints for other API methods looking at the code on [Github](https://github.com/APItools/monitor/blob/master/lua/apps/api.lua).
 
 Can't wait to see what you are going to build with it :)
 
 Happy hacking!
-
-
