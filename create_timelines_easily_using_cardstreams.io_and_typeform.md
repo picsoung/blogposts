@@ -1,13 +1,12 @@
-#Create timelines easily using cardstreams.io and typeform
+#How To Create Timelines Ysing Cardstream and Typeform APIs
 
-While I am preparing for StartupBus I got the chance to try out all the APIs we (3scale) decided to bring with us on the bus and expose to buspreneurs. Among the few selected APIs we have two awesome clients TypeForm and Cardstreams.
+While I am preparing for StartupBus I got the chance to try out all the APIs we (3scale) decided to bring with us on the bus and expose to *buspreneurs*. Amongst the few selected APIs we have two of our awesome customers: TypeForm and Cardstream.
 
-You might already know Typeform for their awesome self-service form creation tool. In few clicks you can build beautiful forms and share it with your users. And you know what? They just launched an API! Using their Typeform.io API you could create form  and receive answers on webhooks. They just opened their beta and make improvements to the API daily.
+You may have heard about Typeform, they have a great self-service form creation tool. In a few clicks, you can build beautiful forms and share them with your users. And you know what? They just launched an API! Using the Typeform API you can create surveys and receive answers on webhooks. They just opened their beta and are making improvements to the API daily.
 
-Cardstream just launched their new API to let you timelime easily. It never have been easier to create feeds or activity streams.
+Cardstream just launched their new API too. Creating feeds or activity streams has never been easier.
 
-In my example I imagined that I want to display user stories on my site. They will submit their stories using a Typeform and then using Cardstream we would generate the stream.
-
+In my example I imagined that I wanted to display user stories on my site. Users would submit their stories using Typeform and we woud generate the stream using Cardstream. Easy.
 
 Here is a schema of the setup.
 
@@ -15,7 +14,7 @@ Here is a schema of the setup.
 
 The form is available [here](https://forms.typeform.io/to/gbuBwDsG58ectQ)
 
-Final result could be seen [here](https://dl.dropboxusercontent.com/u/2996126/site/cardstream.html):
+The final result can be found [here](https://dl.dropboxusercontent.com/u/2996126/site/cardstream.html):
 
 ##What you need
 1. Typeform.io developer account
@@ -23,21 +22,20 @@ Final result could be seen [here](https://dl.dropboxusercontent.com/u/2996126/si
 3. APItools account
 
 ## APItools configuration
-Create first service pointing to the echo-api. We will use this service to receive the webhook sent by typeform everytime a user has submitted an answer to the form.
+Create a first service pointing to the echo-api. We will use this service to receive the webhook sent by Typeform every time a user submits an answer.
 
-Create a second service pointing to cardstream API `https://api.cardstreams.io/v1`
-
+Create a second service pointing to Cardstream API `https://api.cardstreams.io/v1`
 
 ##Typeform.io configuration
 
 ###Create the form
-We are going to create a simple form with three text fields, one to get the name of the user, another one to get the title of his story and a last one to get the content of his story.
+We are going to create a simple form with three text fields: one to get the name of the user, another one to get the title of the story and a last one to get the content of the story.
 
-With just a simple call to Typeform API we will generate this form, and add a webhook. The answer of the call will give us useful information for the rest of this tutorial.
+With just a simple call to the Typeform API we will generate this form and add a webhook. The answer of the call will give us useful information and we'll see how to use it in this tutorial.
 
-You do a `POST` request on `https://api.typeform.io/v0.2/forms`
-passing headers `X-API-TOKEN` with your typeform token.
-and the JSON content as follow
+Make a `POST` request on `https://api.typeform.io/v0.2/forms`
+passing headers `X-API-TOKEN` with your Typeform token.
+and the JSON content as follows:
 
 ```
 {
@@ -61,9 +59,9 @@ and the JSON content as follow
   ]
 }
 ```
-In this you will have to replace `URL_TO_APITOOLS_SERVICE_FOR_WEBHOOK` by the URL of the first service you have created.
+In this you will have to replace `URL_TO_APITOOLS_SERVICE_FOR_WEBHOOK` by the URL of the first service you created.
 
-Once this call is executed you will receive an answer from typeform API like this
+Once this call is executed you will receive an answer from the Typeform API. It should look like this:
 
 ```
 {
@@ -108,9 +106,9 @@ Keep this answer somewhere, you will need the URL of the form to test it out, as
 On [Cardstream developer portal](https://developer.cardstreams.io/cardbuilder) you can create a new stream. Create one and save the ID somewhere.
 
 ## Add middleware to handle webhook
-On the first service you have create we will now add a middleware to pass the data to cardstream.
+On the first service you have create we will now add a middleware module to pass the data to Cardstream.
 
-Here is the code of the middleware
+Here is the code of the middleware:
 
 ``` 
 return function(request, next_middleware)
@@ -144,17 +142,17 @@ In this code you will change:
 
 `ID_OF_FIELD_FOR_USERNAME`, `ID_OF_FIELD_FOR_TITLE` and `ID_OF_FIELD_FOR_STORY` with the IDs given by Typeform.
 
-`CARDSTREAM_STREAM_ID` to the ID of stream you have created on cardstream
+`CARDSTREAM_STREAM_ID` ID of stream you have created on Cardstream
 
-and `CARDSTREAM_APITOOLS_URL` with the URL to the APItools service linked to Cardstream.
+and `CARDSTREAM_APITOOLS_URL` URL of the APItools service linked to Cardstream.
 
 ## Test the flow
-To test that everything is working, submit an answer on your form. You should see the webhook call going through the APItools service and then calling Cardstream service.
-In the end on the cardstream portal on the preview tab, you should see the working result.
+To test that everything is working, submit an answer on your form. You should see the webhook call going through the APItools service and then calling the Cardstream service.
+
+At the end, in the Cardstream portal (preview tab), you should see the working result.
 
 You can then generate the embed code and paste it on your site.
 
+And voila, it was that easy :) There are endless integrations you can build using Typeform API or Cardstream, we'd love to hear about what you're working on!
 
-And voila, it was that easy :) There are endless integrations you can build using Typeform API or Cardstream, let us know what you are building with it.
-
-If you are interested by StartupBus you still have time to apply [here](https://northamerica.startupbus.com/apply/) and attend the [kickoff party](https://www.facebook.com/events/1587243618219465/) on June 3rd in San Francisco.	
+If you are interested in participating in StartupBus you still have time to apply [here](https://northamerica.startupbus.com/apply/) and attend the [kickoff party](https://www.facebook.com/events/1587243618219465/) on June 3rd in San Francisco.	
