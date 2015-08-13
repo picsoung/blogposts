@@ -8,6 +8,16 @@ schema
 
 ## On Amazon
 ### Create lambda functions
+Lamba functions are small pieces of code hosted on Amazon. Those micro-services will sit behind the API gateway. We just two functions to run this example.
+
+One called `3scale_auth` that will handle the authentication of the request with 3scale. And another function of your choice that will perform a task and return a result to the API. This last function will call `3scale_auth` to authorize the incoming request.
+
+In this example our function is doing [PLACE WHAT HELLO WORLD is doing]
+You can find the code here:.
+
+### generate 3scale_auth code
+The code for the `3scale_auth` is unique to each API provider account. You can generate it.
+
 ### Add stuff to your Swagger
 
 In order to import your API into Amazon API gateway you will need to add AWS specific tags to your endpoints in your spec.
@@ -91,4 +101,14 @@ Once the environement variables are setup you can run the following command:
 
 This will create a service service on 3scale, and special metric for each endpoint of your API. That will help to get relevant analytics.
 
-### Use Developer portal 
+### Test your API
+
+Time to test your API. Go Back on the amazon gateway and click on `Deploy API`.
+Your API will be available at URL that looks like `https://SOME_ID.execute-api.us-west-2.amazonaws.com/STAGE_NAME`
+You can now run test on it.
+
+
+
+### Discover more features
+
+
